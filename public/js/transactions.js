@@ -5,7 +5,7 @@ let data = {
   transactions: [],
 };
 let transactionIndex = 0;
-
+let transactionToRemove = null;
 document.getElementById("button-logout").addEventListener("click", logout);
 
 function logout() {
@@ -89,12 +89,6 @@ function checkedLogged() {
   console.log(data);
 }
 
-function logout() {
-  sessionStorage.removeItem("logged");
-  localStorage.removeItem("session");
-  window.location.href = "index.html";
-}
-
 function getTransactions() {
   const transactions = data.transactions;
   let transactionsHtml = "";
@@ -106,27 +100,60 @@ function getTransactions() {
         type = "Saída";
       }
 
-      transactionsHtml += `  <tr>
-                        <th scope="row">${item.date
-                          .split("-")
-                          .reverse()
-                          .join("-")}</th>
-                        <td>${item.value.toFixed(2)}</td>
-                        <td>${type}</td>
-                        <td class="description-cel">${item.description}</td>
-                        <td id="actions"><button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#edit-modal" onclick="getTransactionDetails(${index})"><i class="bi bi-pencil-fill"></i></button><button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#remove-modal" onclick="getTransactionDetails(${index})"><i class="bi bi-trash2-fill"></i></button></td>
-              
-                      </tr>
-                      `;
+      transactionsHtml += `
+  <tr>
+    <th scope="row">${item.date.split("-").reverse().join("-")}</th>
+    <td>${item.value.toFixed(2)}</td>
+    <td>${type}</td>
+    <td class="description-cel">${item.description}</td>
+    <td id="actions">
+      <button class="btn btn-sm btn-primary" 
+              data-bs-toggle="modal"
+              data-bs-target="#edit-modal"
+              onclick="getTransactionDetails(${index})">
+        <i class="bi bi-pencil-fill"></i>
+      </button>
+      <button class="btn btn-sm btn-danger"
+              data-bs-toggle="modal"
+              data-bs-target="#remove-modal"
+              onclick="setTransactionToRemove(${index})">
+        <i class="bi bi-trash2-fill"></i>
+      </button>
+    </td>
+  </tr>
+`;
     });
   }
   document.getElementById("transactions-list").innerHTML = transactionsHtml;
 }
 
-function removeTransaction(index) {
-  data.transactions.splice(index, 1);
+function removeTransaction() {
+  if (transactionToRemove === null) return;
+
+  data.transactions.splice(transactionToRemove, 1);
   saveData(data);
   getTransactions();
+
+  transactionToRemove = null;
+
+  const removeModal = bootstrap.Modal.getInstance(
+    document.getElementById("remove-modal")
+  );
+  removeModal.hide();
+
+  alert("Transação removida com sucesso!");
+}
+
+function setTransactionToRemove(index) {
+  transactionToRemove = index;
+
+  const transaction = data.transactions[index];
+  descriptionView.innerText = "Descrição: " + transaction.description;
+  dateView.innerText =
+    "Data: " + transaction.date.split("-").reverse().join("-");
+  valueView.innerText = "Valor: R$ " + transaction.value.toFixed(2);
+  typeView.innerText =
+    "Tipo: " + (transaction.type === "1" ? "Entrada" : "Saída");
 }
 function updateTransaction(index, newData) {
   data.transactions[index] = newData;
