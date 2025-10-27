@@ -58,6 +58,7 @@ document.getElementById("create-form").addEventListener("submit", function (e) {
     transactions: [],
   });
 
+  e.target.reset();
   myModal.hide();
   alert("Conta criada com sucesso!");
 });
